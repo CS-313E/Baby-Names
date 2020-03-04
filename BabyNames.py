@@ -17,7 +17,7 @@
 
 
 
-class BabyNames:
+class BabyNames():
     """Class to store all the baby names"""
     
     # Initializes the dictionary that will hold all the baby names
@@ -27,10 +27,12 @@ class BabyNames:
 
     # Reads in the file and adds to the dictionary
     def fill_data(self, file_name):
+        self.file_name = file_name
+        infile = open(self.file_name, 'r')
+        data_lines = (infile.readlines())
         global d
         d = {} 
-        self.file_name = file_name
-        for i in self.file_name:
+        for i in data_lines:
             list_=i.split()
             key = list_[0]
             x = list_[1:]
@@ -44,14 +46,13 @@ class BabyNames:
 
     # Returns all the rankings for a given name. Assume the name exists
     def find_ranking(self, names):
-        global rankings
         self.name = names
         rankings = d.get(self.name) #list of integers containing the rankings from all 11 decades
+        rankings = list(rankings)
         return rankings
         
     # Returns a list of names that have a rank in all the decades in sorted order by name.
     def ranks_of_all_decades(self):
-        global alpha_rank 
         alpha_rank= []
         i = 0 
         for value in d.values(): #alphabetical order containing all the names that have a rank
@@ -59,7 +60,7 @@ class BabyNames:
                 alpha_rank.append(list(d.keys())[i])
             i+=1
         return alpha_rank
-        
+    
             
     #  Returns a list of all the names that have a rank in a given decade in order of rank.
     def ranks_of_a_decade(self, decade):
@@ -67,7 +68,7 @@ class BabyNames:
         rank = []
         x = int((int(self.decade)-1900)/10) #list index for year
         for i in range(len(d.values())):    #list of values
-            if list(d.values())[i][x] != '0':
+            if list(d.values())[i][x] != '1001':
                 rank.append((list(d.keys())[i], int(list(d.values())[i][x])))
             rank.sort(key = lambda x: x[1]) #sort tuple (name,rank)
         return rank
@@ -79,7 +80,7 @@ class BabyNames:
         for i in range(len(d.values())): 
             low,high = 9,10 
             val = list(d.values())[i]
-            while int(val[low]) > int(val[high]) and high != 0: #constantly gets lower rank
+            while (int(val[low])) > (int(val[high])) and (high != 0): #constantly gets lower rank
                 low -= 1
                 high -= 1
             if high == 0 and val[1:] != '0':
@@ -99,7 +100,7 @@ class BabyNames:
             while int(val[low]) < int(val[high]) and high != 0: #constantly get higher rank
                 low -= 1
                 high -= 1
-            if high == 0 and val[:10] != '0':
+            if high == 0 and val[:10] != '1001':
                  x.append((list(d.keys())[i]))
         return x
 
@@ -107,10 +108,8 @@ class BabyNames:
 def main():
 	# create the menu with choices 
     #my_dict = dict(name = '',year = '',ranking = '') #empty dictionary to hold baby names
-    infile = open('names.txt', 'r')
-    data_lines = (infile.readlines())
     name_baby = BabyNames()
-    name_baby.fill_data(data_lines)
+    name_baby.fill_data('names.txt')
     while True: 
         print('\nOptions:') #menu options
         print('Enter 1 to search for names.')
@@ -149,13 +148,13 @@ def main():
         elif user_input == '2': #display data for one name 
             name = input('Enter a name: ')
             print()
-            rank = ''
             x = name_baby.find_ranking(name)
-            for names in name_baby.find_ranking(name):
-                rank += names + ' '   
-            print(str(name)+':',rank)
+            print(str(name)+': ',end='')
+            print(*x,sep=' ')
             for num in range(11):
                 year = 1900+(10*num)    #calculate year
+                if x[num] == '1001':
+                    x[num] = '0'
                 print(str(year)+":",(x[num])) 
 
         elif user_input == '3': #display all names that appear in one decade in order of rank
@@ -165,10 +164,10 @@ def main():
                 print(str(i[0])+':',i[1])
 
         elif user_input == '4': #display all names that appear in all decades.
-            name_baby.ranks_of_all_decades()
-            total = len(alpha_rank)
+            rank = name_baby.ranks_of_all_decades()
+            total = len(rank)
             print(total,'names appear in every decade. The names are:') 
-            for i in alpha_rank:
+            for i in rank :
                 print(i)
 
         elif user_input == '5':# display all names that are more popular in every decade
@@ -181,8 +180,8 @@ def main():
             print (len(name),'names are less popular in every decade.')
             for i in name:
                 print(i)
+    infile.close()
 
-        
 if __name__ == '__main__':
 	main()
 
